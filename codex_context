@@ -1,0 +1,235 @@
+PdfToolkit Codex Context
+========================
+
+Purpose
+-------
+This file captures the important project context accumulated during the Codex thread that led to the current repository state. It is intended to help future Codex sessions start with the same working understanding without having to rediscover decisions, recent changes, and active constraints.
+
+Current Identity
+----------------
+- Project/product name: `PdfToolkit`
+- Composer package name: `pdftookit/pdftoolkit`
+- PHP namespace: `PdfToolkit\\...`
+- Current filesystem path during this session: `/Users/alexdrake/Sites/PdfToolbox`
+- The user stated they will rename the root directory separately.
+
+High-Level Project Description
+------------------------------
+This project is a native PHP PDF toolkit for PHP 8.2+.
+
+Core supported areas at this point:
+- Generate PDFs from scratch
+- Import existing PDFs
+- Modify imported PDFs
+- Overlay text/shapes/content onto imported pages
+- Work with AcroForm fields
+- Handle images and color spaces
+- Embed and subset fonts
+- Support practical Unicode text output
+- Support practical shaping coverage short of HarfBuzz-class shaping
+- Support Standard Security encrypted PDF import/export through the implemented RC4/AES paths
+- Provide a higher-level layout layer including flowing text, panels, and tables
+
+The project explicitly discloses that it was created completely with AI assistance through Codex.
+
+Roadmap Status
+--------------
+The original broad roadmap was intentionally narrowed into a finishable v1 roadmap and then completed.
+
+The active v1 roadmap items that were completed:
+- Public API audit/freeze
+- Docs/examples tightening
+- Compatibility and limitations guide
+- Focused real-PDF stabilization pass
+- Release-facing package polish
+
+Current roadmap state:
+- Active v1 roadmap: complete
+- Remaining work belongs to post-v1 backlog
+
+Post-v1 backlog themes:
+- Deeper OpenType shaping and complex-script behavior
+- Broader imported editing/resource/operator fidelity
+- Additional hardening for unusual PDFs/fonts
+- Larger layout/rendering ambitions
+- Broader encryption edge coverage if needed
+
+Recent Major Decisions
+----------------------
+1. Stop treating every worthwhile enhancement as an active roadmap item.
+   The user asked for a realistic, finishable roadmap. The repo docs were updated so v1 has a clear finish line and post-v1 work is explicitly separate.
+
+2. Keep the project honest about AI authorship.
+   The README and Composer package description were updated to explicitly state that the project was created completely with AI assistance through Codex.
+
+3. Rename the project from PdfToolbox to PdfToolkit.
+   This was first done at the branding/package level, then later elevated into a full namespace rename when the user explicitly requested the namespace be updated too.
+
+4. Preserve compatibility where it matters operationally.
+   During the rename, old security/env-var names were retained as fallbacks in key code paths so existing deployments would not silently lose safety settings.
+
+Current Naming / Packaging State
+--------------------------------
+- Composer package in `composer.json`: `pdftookit/pdftoolkit`
+- Namespace in source/tests/examples/docs: `PdfToolkit`
+- Autoload mappings in Composer:
+  - `PdfToolkit\\` => `src/`
+  - `PdfToolkit\\Tests\\` => `tests/`
+
+Important note:
+- `composer.lock` may still need to be refreshed after the package-name change.
+- An attempt to run `composer update --lock --no-install` failed in this environment because Packagist could not be reached.
+
+Security Work Completed In This Thread
+--------------------------------------
+The project underwent a security-oriented audit and the following hardening was implemented:
+
+1. SVG/ImageMagick hardening
+- SVG rasterization via ImageMagick is disabled by default.
+- It requires explicit opt-in through an env var.
+
+2. Decompression safety limits
+- Added decoded-stream safety limits for PDF stream inflation
+- Added decoded-image safety limits for raster paths
+- Added raster pixel count safety limits
+
+3. Browser example header hardening
+- Example download filenames were sanitized before being used in browser `Content-Disposition` output.
+
+4. Env var rename compatibility
+- New env-var prefix: `PDFTOOLKIT_*`
+- Legacy env-var prefix fallback preserved where relevant: `PDFTOOLBOX_*`
+
+Important env vars now in play:
+- `PDFTOOLKIT_ENABLE_SVG_MAGICK`
+- `PDFTOOLKIT_MAX_DECODED_STREAM_BYTES`
+- `PDFTOOLKIT_MAX_DECODED_IMAGE_BYTES`
+- `PDFTOOLKIT_MAX_RASTER_PIXELS`
+
+Legacy fallbacks preserved in code:
+- `PDFTOOLBOX_ENABLE_SVG_MAGICK`
+- `PDFTOOLBOX_MAX_DECODED_STREAM_BYTES`
+- `PDFTOOLBOX_MAX_DECODED_IMAGE_BYTES`
+- `PDFTOOLBOX_MAX_RASTER_PIXELS`
+
+Optimization / Performance Work Completed
+-----------------------------------------
+The codebase underwent a broad optimization pass before the OOP/rename work.
+
+Major optimizations implemented:
+- Shared parsed TrueType/TTC caching
+- Font resolution caching
+- Consolidated page resource analysis in the writer/compiler
+- Replaced `array_shift()` queue traversals with index-based traversal in imported graph walks
+- Reused builder-level `TextMeasurer`
+- Added width memoization in wrapping/flow paths
+- Added wrapped-text layout caching for table/layout work
+- Reused serializer instances in parser/import/encryption helpers
+- Avoided unnecessary imported content stream rewrites when nothing changed
+- Memoized image path keys
+
+The intent of those changes was to improve repeated-work hotspots without changing output behavior.
+
+Modern PHP OOP Cleanup Completed
+--------------------------------
+The codebase was reviewed for modern PHP OOP best-practice alignment.
+
+Changes made:
+- Static-only helper/facade classes were made explicitly non-instantiable by adding private constructors where appropriate.
+- `Importer` was changed to accept a `PdfParser` dependency through its constructor instead of always hard-coding `new PdfParser()`.
+- A test was added to verify explicit parser injection on `Importer`.
+
+This was intentionally kept conservative because the codebase was already fairly modern in structure.
+
+Examples / Fixtures
+-------------------
+Relevant example files added or maintained:
+- `examples/generate_hello_world.php`
+- `examples/generate_hello_world_browser.php`
+- `examples/import_add_text.php`
+- `examples/import_add_text_browser.php`
+- `examples/fill_form_browser.php`
+- `examples/list_form_fields_browser.php`
+- `examples/README.md`
+
+Important example/fixture notes:
+- `examples/f1099msc.pdf` is the main shipped real-world example fixture
+- A proprietary `chubb_contract_form.pdf` example/fixture was explicitly removed and should not be reintroduced as a public example
+
+Coordinate Model
+----------------
+The public placement model was intentionally changed so:
+- `y = 0` means the top of the page
+- Larger `y` values move downward
+
+This is a project-wide public API convention now and should be preserved unless a deliberate breaking change is planned.
+
+Forms / Import Notes
+--------------------
+The project supports meaningful AcroForm workflows, including:
+- Imported field discovery
+- Text/checkbox updates
+- Hierarchical field names
+- Appearance regeneration (simple)
+- Flattening
+
+It is AcroForm-oriented, not an XFA-first project.
+
+Real-World Import Notes
+-----------------------
+An IRS `1099-MISC` real-world file exposed parser gaps that were fixed during the thread:
+- Hybrid xref handling
+- Predictor-aware xref stream decoding
+
+The parser now successfully handles that shipped fixture.
+
+Documentation Added / Updated During This Thread
+------------------------------------------------
+Major docs added or substantially updated:
+- `README.md`
+- `docs/roadmap.md`
+- `docs/architecture.md`
+- `docs/compatibility.md`
+- `docs/public-api.md`
+- `docs/release-checklist.md`
+- `CHANGELOG.md`
+- `LICENSE`
+- `examples/README.md`
+
+Testing / Validation State
+--------------------------
+At the last major validation point after the namespace rename, the full suite passed:
+- PHPUnit: `422 tests, 2121 assertions, 3 skipped`
+
+Common non-failing environment warnings seen during test runs:
+- `libpng warning: Interlace handling should be turned on when using png_read_image`
+- Fontconfig writable-cache warnings
+
+Those warnings were known and tolerated during this thread as long as the suite still passed.
+
+Environment / Tooling Notes
+---------------------------
+- This workspace was not a Git repository during the later part of the thread (`git status` failed with “not a git repository”).
+- Composer autoloads were regenerated successfully after the namespace rename.
+- Composer package validation after the final package-name update reported that the lock file was out of date, but the lock refresh could not be completed here because Packagist was unreachable in this environment.
+
+Open Practical Follow-Ups
+-------------------------
+These are not active roadmap blockers, but they are useful next-session context:
+
+1. Rename the filesystem root directory if the user has not done it yet.
+2. Refresh `composer.lock` once network access to Packagist is available.
+3. If publishing soon, rerun:
+   - `composer validate --no-check-publish`
+   - full PHPUnit
+4. If post-v1 work resumes, start from the documented post-v1 backlog rather than recreating the old open-ended roadmap model.
+
+Guidance For Future Codex Sessions
+----------------------------------
+- Do not revert the namespace back to `PdfToolbox`.
+- Do not re-expand the active roadmap; use the v1-complete framing already documented.
+- Preserve the explicit AI-authorship disclosure.
+- Preserve the top-origin coordinate model unless the user explicitly wants a breaking API redesign.
+- Preserve the legacy `PDFTOOLBOX_*` env-var fallbacks unless there is a deliberate compatibility break.
+- Do not reintroduce proprietary example fixtures like the removed Chubb form.
+

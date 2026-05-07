@@ -1,0 +1,49 @@
+{
+    "name": "pdftookit/pdftoolkit",
+    "description": "PdfToolkit is a native PHP PDF generation and import toolkit for PHP 8.2+, created completely with AI assistance through Codex.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "pdf",
+        "php",
+        "pdf-generation",
+        "pdf-import",
+        "forms"
+    ],
+    "require": {
+        "php": "^8.2",
+        "ext-json": "*",
+        "ext-mbstring": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0"
+    },
+    "suggest": {
+        "ext-openssl": "Required for AES-based encrypted PDF import and export paths.",
+        "ext-gd": "Used for some raster fallback image decoding paths.",
+        "imagemagick/imagemagick": "Local ImageMagick `magick` support is used for SVG raster fallback workflows."
+    },
+    "autoload": {
+        "psr-4": {
+            "PdfToolkit\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "PdfToolkit\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test:fixtures": "vendor/bin/phpunit tests/RealWorldFixtureIntegrationTest.php",
+        "test:integration": "vendor/bin/phpunit tests/Integration",
+        "test:corpus": "php scripts/run-corpus.php",
+        "test:corpus-variants": "vendor/bin/phpunit tests/Integration/CorpusVariantIntegrationTest.php",
+        "test:workflows": "vendor/bin/phpunit tests/Integration/WorkflowSmokeIntegrationTest.php",
+        "test:mutations": "vendor/bin/phpunit tests/Integration/CorruptedInputIntegrationTest.php",
+        "test:rendered": "vendor/bin/phpunit tests/Integration/RenderedWorkflowIntegrationTest.php",
+        "test:stress": "vendor/bin/phpunit tests/Integration/StressWorkflowIntegrationTest.php",
+        "run:stress": "php scripts/run-stress.php",
+        "run:corpus-variants": "php scripts/run-corpus-variants.php"
+    }
+}
