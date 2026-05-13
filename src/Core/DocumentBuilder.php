@@ -70,6 +70,20 @@ final class DocumentBuilder
         return $this;
     }
 
+    public function pageHeader(?callable $renderer): self
+    {
+        $this->document->setPageHeaderRenderer($renderer);
+
+        return $this;
+    }
+
+    public function pageFooter(?callable $renderer): self
+    {
+        $this->document->setPageFooterRenderer($renderer);
+
+        return $this;
+    }
+
     public function addPage(float $width = 595.0, float $height = 842.0, int $rotation = 0): self
     {
         $page = new Page($width, $height);

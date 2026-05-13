@@ -259,6 +259,7 @@ Implemented in this first pass:
 - generated catalog `/MarkInfo` support
 - generated catalog `/URI` base support
 - high-level layout primitives for flow text, reusable text frames, content margins, stacked text blocks, panels, and paginated tables
+- repeating page header/footer renderers with final page-number/page-count context
 - multi-column text flow with derived column frames and continuation across pages
 - panel-backed flow text helpers for single frames, content frames, reusable frame sets, and derived multi-column layouts
 - stacked text blocks across reusable frames and multi-column layouts

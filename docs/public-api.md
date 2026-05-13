@@ -26,6 +26,7 @@ These are the top-level entry points for creating, loading, importing, and measu
 - `PdfToolkit\Core\DocumentBuilder`
 - `PdfToolkit\Core\Page`
 - `PdfToolkit\Core\PageBuilder`
+- `PdfToolkit\Core\PageRenderContext`
 - `PdfToolkit\Core\DocumentMetadata`
 - `PdfToolkit\Writer\WriteOptions`
 - `PdfToolkit\Writer\StandardPermissions`

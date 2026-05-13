@@ -18,6 +18,8 @@ These examples are the quickest way to try the primary `PdfToolkit` workflows fo
   Shows fillable form fields on top of the PDF and in a selectable sidebar.
 - `application_pdf_browser.php`
   Imports an external application template, overlays fixed-position answers/signatures, and appends generated beneficiary pages.
+- `commissions_report_browser.php`
+  Recreates a legacy commissions statement as a native PdfToolkit report with repeating headers/footers, a paginated record table, and a final summary page.
 
 ## Sample PDFs Included
 

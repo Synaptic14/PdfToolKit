@@ -90,3 +90,7 @@ composer.lock
 vendor
 .phpunit.cache
 phpunit
+
+chubb_application_form.pdf
+commissions_report_browser.php
+application_pdf_browser.php

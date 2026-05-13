@@ -61,6 +61,17 @@ final class Page
     ) {
     }
 
+    public function __clone()
+    {
+        $this->texts = array_values($this->texts);
+        $this->lines = array_values($this->lines);
+        $this->rectangles = array_values($this->rectangles);
+        $this->images = array_values($this->images);
+        $this->formFields = array_values($this->formFields);
+        $this->textAnnotations = array_values($this->textAnnotations);
+        $this->linkAnnotations = array_values($this->linkAnnotations);
+    }
+
     public static function a4(): self
     {
         return new self(595.0, 842.0);

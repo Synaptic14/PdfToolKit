@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PdfToolkit\Core;
 
+use Closure;
 use PdfToolkit\Navigation\NamedDestination;
 use PdfToolkit\Navigation\DocumentView;
 use PdfToolkit\Navigation\MarkInfo;
@@ -74,9 +75,20 @@ final class Document
 
     private ?ImportedStructTreeSource $importedStructTreeSource = null;
 
+    private ?Closure $pageHeaderRenderer = null;
+
+    private ?Closure $pageFooterRenderer = null;
+
     public function __construct(?DocumentMetadata $metadata = null)
     {
         $this->metadata = $metadata ?? new DocumentMetadata();
+    }
+
+    public function __clone()
+    {
+        foreach ($this->pages as $index => $page) {
+            $this->pages[$index] = clone $page;
+        }
     }
 
     public function metadata(): DocumentMetadata
@@ -108,6 +120,30 @@ final class Document
         $this->pages[] = $page ?? Page::a4();
 
         return $this;
+    }
+
+    public function setPageHeaderRenderer(?callable $renderer): self
+    {
+        $this->pageHeaderRenderer = $renderer === null ? null : Closure::fromCallable($renderer);
+
+        return $this;
+    }
+
+    public function pageHeaderRenderer(): ?Closure
+    {
+        return $this->pageHeaderRenderer;
+    }
+
+    public function setPageFooterRenderer(?callable $renderer): self
+    {
+        $this->pageFooterRenderer = $renderer === null ? null : Closure::fromCallable($renderer);
+
+        return $this;
+    }
+
+    public function pageFooterRenderer(): ?Closure
+    {
+        return $this->pageFooterRenderer;
     }
 
     public function addNamedDestination(

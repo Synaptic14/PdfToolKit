@@ -6,6 +6,8 @@ namespace PdfToolkit\Tests;
 
 use PdfToolkit\Annotations\LinkAnnotation;
 use PdfToolkit\Annotations\TextAnnotation;
+use PdfToolkit\Core\Page;
+use PdfToolkit\Core\PageRenderContext;
 use PdfToolkit\Core\PdfException;
 use PdfToolkit\Pdf;
 use PdfToolkit\Forms\FormField;
@@ -39,6 +41,80 @@ final class DocumentBuilderTest extends TestCase
 
         $this->assertCount(1, $document->pages());
         $this->assertSame('Spec', $document->metadata()->title);
+    }
+
+    public function testPageHeaderAndFooterRenderWithFinalPageNumbersOnSave(): void
+    {
+        $document = Pdf::new()
+            ->pageHeader(static function (Page $page, PageRenderContext $context): void {
+                $page->addText(new TextRun(
+                    sprintf('Header %d/%d', $context->pageNumber, $context->pageCount),
+                    20,
+                    20,
+                    10
+                ));
+            })
+            ->pageFooter(static function (Page $page, PageRenderContext $context): void {
+                $page->addText(new TextRun(
+                    sprintf('Footer %d/%d', $context->pageNumber, $context->pageCount),
+                    20,
+                    $context->pageHeight - 20,
+                    10
+                ));
+            })
+            ->addPage(width: 200, height: 200)
+            ->text(new TextRun('Body One', 40, 80))
+            ->endPage()
+            ->addPage(width: 200, height: 200)
+            ->text(new TextRun('Body Two', 40, 80))
+            ->endPage()
+            ->build();
+
+        $this->assertCount(1, $document->page(0)->texts());
+        $this->assertCount(1, $document->page(1)->texts());
+
+        $bytes = $document->save();
+
+        $this->assertStringContainsString('(Header 1/2) Tj', $bytes);
+        $this->assertStringContainsString('(Header 2/2) Tj', $bytes);
+        $this->assertStringContainsString('(Footer 1/2) Tj', $bytes);
+        $this->assertStringContainsString('(Footer 2/2) Tj', $bytes);
+        $this->assertStringContainsString('(Body One) Tj', $bytes);
+        $this->assertStringContainsString('(Body Two) Tj', $bytes);
+    }
+
+    public function testPageFooterUsesFinalPageCountAfterAutomaticPagination(): void
+    {
+        $document = Pdf::new()
+            ->pageFooter(static function (Page $page, PageRenderContext $context): void {
+                $page->addText(new TextRun(
+                    sprintf('Page %d of %d', $context->pageNumber, $context->pageCount),
+                    20,
+                    $context->pageHeight - 12,
+                    10
+                ));
+            })
+            ->addPage(width: 200, height: 50)
+            ->flowText(
+                "One\nTwo\nThree",
+                10,
+                10,
+                100,
+                fontSize: 20.0,
+                lineHeight: 1.0,
+                topMargin: 10.0,
+                bottomMargin: 10.0,
+            )
+            ->endPage()
+            ->build();
+
+        $this->assertCount(3, $document->pages());
+
+        $bytes = $document->save();
+
+        $this->assertStringContainsString('(Page 1 of 3) Tj', $bytes);
+        $this->assertStringContainsString('(Page 2 of 3) Tj', $bytes);
+        $this->assertStringContainsString('(Page 3 of 3) Tj', $bytes);
     }
 
     public function testFlowTextWrapsIntoMultipleLines(): void

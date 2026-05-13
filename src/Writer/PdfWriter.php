@@ -9,6 +9,7 @@ use PdfToolkit\Annotations\TextAnnotation;
 use PdfToolkit\Core\Document;
 use PdfToolkit\Core\ImportedContentStream;
 use PdfToolkit\Core\ImportedPageSource;
+use PdfToolkit\Core\PageRenderContext;
 use PdfToolkit\Forms\FormField;
 use PdfToolkit\Image\ImageReader;
 use PdfToolkit\Image\ImageXObject;
@@ -45,6 +46,7 @@ final class PdfWriter
     public function write(Document $document, ?WriteOptions $options = null): string
     {
         $this->options = $options ?? new WriteOptions();
+        $document = $this->applyPageChrome($document);
         $securityWriter = StandardSecurityWriter::fromWriteOptions($this->options);
         $objects = [
             3 => $this->buildInfoObject($document),
@@ -322,6 +324,33 @@ final class PdfWriter
         );
 
         return $body;
+    }
+
+    private function applyPageChrome(Document $document): Document
+    {
+        $headerRenderer = $document->pageHeaderRenderer();
+        $footerRenderer = $document->pageFooterRenderer();
+
+        if ($headerRenderer === null && $footerRenderer === null) {
+            return $document;
+        }
+
+        $renderedDocument = clone $document;
+        $pageCount = count($renderedDocument->pages());
+
+        foreach ($renderedDocument->pages() as $pageIndex => $page) {
+            $context = new PageRenderContext(
+                pageNumber: $pageIndex + 1,
+                pageCount: $pageCount,
+                pageWidth: $page->width(),
+                pageHeight: $page->height(),
+            );
+
+            $headerRenderer?->__invoke($page, $context);
+            $footerRenderer?->__invoke($page, $context);
+        }
+
+        return $renderedDocument;
     }
 
     private function writeGeneratedPage(
